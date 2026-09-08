@@ -12,6 +12,11 @@ from typing import Any, Dict, List, Tuple, Optional, Set
 
 from jsonschema import validate, ValidationError
 
+try:
+    from .windows import validate_window_type
+except ImportError:  # direct script execution
+    from windows import validate_window_type
+
 # We'll load the schemas from the schemas directory
 import os
 
@@ -175,6 +180,10 @@ def validate_publication_and_snapshots(
                             if snap_time < pub_time:
                                 errors.append(
                                     f"Snapshot captured_at_utc {snap_time_str} is before publication published_at_utc {pub_time_str}"
+                                )
+                            elif not validate_window_type(pub_time_str, snap_time_str, snap.get("window_type", "")):
+                                errors.append(
+                                    f"Snapshot window_type {snap.get('window_type')} does not match publication/capture timestamps"
                                 )
         
         # Additionally, check that each snapshot's publication_id matches the publication's publication_id

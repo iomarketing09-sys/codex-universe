@@ -92,7 +92,7 @@ def validate_window_type(published_at_utc: str, captured_at_utc: str, window_typ
     """
     try:
         expected = calculate_window_type(published_at_utc, captured_at_utc)
-        return expected == window_type.lower()
+        return expected.lower() == window_type.lower()
     except ValueError:
         return False
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         ("2026-09-08T12:00:00Z", "2026-09-08T12:00:00Z", "E0"),  # exact match
         ("2026-09-08T12:00:00Z", "2026-09-08T13:00:00Z", "lifetime"),  # 1 hour exactly -> lifetime (since E0 is <1 hour)
         ("2026-09-08T12:00:00Z", "2026-09-09T11:59:59Z", "lifetime"),  # 23h59m59s -> lifetime
-        ("2026-09-08T12:00:00Z", "2026-09-09T12:00:01Z", "lifetime"),  # 24h00s01s -> lifetime (since E24 is <25 hours)
+        ("2026-09-08T12:00:00Z", "2026-09-09T12:00:01Z", "E24"),  # 24h00m01s remains inside the E24 window
     ]
     
     all_passed = True

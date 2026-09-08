@@ -5,7 +5,7 @@
 **Estado:** Draft  
 **Fecha de creación:** 2026-09-08  
 **Última actualización:** 2026-09-08  
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Autor:** Manus AI (CGO)  
 **Documentos relacionados:** [Estado histórico de Universe 2026](15_00_Estado_Historico_Universe_2026.md), [Fuente maestra y ledgers](14_00_Fuente_Maestra_y_Ledgers.md), [Reglas de aprendizaje](06_00_Reglas_Aprendizaje_Tendencias.md), [Studio Governance](../Studio_Governance.md)  
 **Organización:** `GrowthOS/`
@@ -83,7 +83,13 @@ Codex queda listo para la siguiente fase solo cuando todas las pruebas sintétic
 
 Después de esa aprobación se diseña una única captura real de bajo riesgo. No antes.
 
-## 9. Qué necesita Codex del CGO
+## 9. Auditoría inicial — 2026-09-08
+
+La implementación inicial fue auditada contra este contrato. Se corrigieron tres defectos: expectativa incorrecta del self-test para `E24`, comparación de ventanas sensible a mayúsculas y falta de comprobación de que `window_type` coincidiera con los timestamps. También se añadió `requirements-dev.txt`.
+
+Resultado: **12 pruebas sintéticas pasan**, los módulos compilan y los self-tests de ventanas y validación pasan. No se conectaron cuentas, no se usaron datos reales y no se modificó ninguna plataforma externa.
+
+## 10. Qué necesita Codex del CGO
 
 Codex necesita únicamente: nombres finales de campos; taxonomía de plataformas, formatos, personajes y círculos; definición exacta de ventanas E0/E24/E72; criterios de calidad; política de faltantes; ejemplos sintéticos; y aprobación de cada transición de fase. No necesita todavía tokens, contraseñas, acceso a cuentas ni permiso para publicar.
 
