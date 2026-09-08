@@ -1,0 +1,49 @@
+{
+  "authorization_id": "USM-CAPTURE-20260908-01",
+  "authorized": true,
+  "authorized_by": "Fernando",
+  "authorized_at_utc": "2026-09-08T00:00:00Z",
+  "purpose": "Single low-risk lifetime metrics read for Codex validation",
+  "scope": {
+    "platform": "Facebook",
+    "account_id": "1036844829507460",
+    "meta_post_id": "1036844829507460_122151377199072582",
+    "publication_id": "PUB-FB-17_30-44",
+    "window_type": "lifetime",
+    "max_external_reads": 1,
+    "read_only": true
+  },
+  "allowed_metrics": [
+    "impressions",
+    "reach",
+    "views",
+    "interactions",
+    "reactions",
+    "comments",
+    "shares",
+    "saves",
+    "clicks"
+  ],
+  "prohibited": [
+    "publishing",
+    "editing",
+    "deleting",
+    "scheduling",
+    "comments",
+    "direct_messages",
+    "personal_data",
+    "automatic_retries",
+    "additional_posts",
+    "additional_accounts",
+    "additional_platforms"
+  ],
+  "stop_on": [
+    "account_mismatch",
+    "post_id_mismatch",
+    "unexpected_sensitive_fields",
+    "authentication_failure",
+    "schema_validation_failure",
+    "more_than_one_external_read"
+  ],
+  "execution_status": "authorized_not_executed"
+}
