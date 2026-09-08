@@ -1,0 +1,14 @@
+{
+  "publication_id": "pub_fixture_001",
+  "platform": "instagram",
+  "account_id": "account_fixture_001",
+  "asset_ref": "asset_fixture_001",
+  "published_at_utc": "2026-09-08T12:00:00Z",
+  "format": "video",
+  "character": "hero",
+  "circle": "fitness",
+  "status": "published",
+  "experiment_id": "exp_fixture_001",
+  "hypothesis_id": "hyp_fixture_001",
+  "meta_post_id": "meta_post_fixture_001"
+}

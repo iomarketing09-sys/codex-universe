@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Experiment",
+  "type": "object",
+  "required": [
+    "experiment_id",
+    "status"
+  ],
+  "properties": {
+    "experiment_id": {
+      "type": "string",
+      "description": "Unique identifier for the experiment"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "running", "closed", "insufficient_data"],
+      "description": "Current status of the experiment"
+    }
+  },
+  "additionalProperties": false
+}

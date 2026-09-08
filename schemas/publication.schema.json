@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Publication",
+  "type": "object",
+  "required": [
+    "publication_id",
+    "platform",
+    "account_id",
+    "asset_ref",
+    "published_at_utc",
+    "format",
+    "character",
+    "circle",
+    "status"
+  ],
+  "properties": {
+    "publication_id": {
+      "type": "string",
+      "description": "Unique identifier for the publication"
+    },
+    "platform": {
+      "type": "string",
+      "description": "Platform where the publication is made (e.g., instagram, facebook)"
+    },
+    "account_id": {
+      "type": "string",
+      "description": "Identifier of the account on the platform"
+    },
+    "meta_post_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the post on Meta platform, if applicable"
+    },
+    "asset_ref": {
+      "type": "string",
+      "description": "Reference to the asset used in the publication"
+    },
+    "published_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the publication was published (UTC)"
+    },
+    "format": {
+      "type": "string",
+      "description": "Format of the publication (e.g., video, image, carousel)"
+    },
+    "character": {
+      "type": "string",
+      "description": "Character or persona used in the publication"
+    },
+    "circle": {
+      "type": "string",
+      "description": "Circle or topic category"
+    },
+    "experiment_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the experiment this publication belongs to"
+    },
+    "hypothesis_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the hypothesis being tested"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved", "scheduled", "published", "cancelled", "failed"],
+      "description": "Current status of the publication"
+    }
+  },
+  "additionalProperties": false
+}

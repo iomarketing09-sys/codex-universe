@@ -1,0 +1,119 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and credentials
+*.env
+*.secrets.json
+*.keys
+*.pem
+*.key
+
+# Logs
+*.log
+
+# Data and output (if they contain sensitive data, but we are using synthetic data)
+# We'll keep the data and outputs in the repo because they are synthetic and part of the test fixtures.
+# However, if we were to store real data, we would ignore it.
+# For now, we are not ignoring data/ and outputs/ because they are part of the required structure and contain synthetic data.
+
+# But note: the contract says no secrets in outputs. We are only putting synthetic data there.
+# We'll leave them in the repo for now, but if we were to add real data, we would ignore.
+
+# However, to be safe, we can ignore any file that might contain secrets in the data and outputs directories.
+# We'll do a more specific ignore for patterns that might indicate secrets.
+data/*/secrets.json
+outputs/*/secrets.json
+
+# But note: we are creating the structure as per the contract, so we want to keep the directories.
+# We'll ignore the contents of the directories if they are not part of the required structure?
+# Actually, the contract requires:
+#   data/
+#   data/examples/
+#   data/fixtures/
+#   outputs/
+# We want to keep the directories but we can ignore any files that are not part of the required structure.
+# However, for simplicity, we will not ignore the entire directories because we want to check in the synthetic fixtures and examples.
+# We'll rely on the fact that we are not putting any real secrets in there.
+
+# If we were to put real data, we would change this.
+
+# Alternatively, we can ignore the contents of data/examples, data/fixtures, and outputs and then add the specific synthetic files we want to keep.
+# But that is more complex. Let's keep it simple and not ignore the directories, and just make sure we don't add secrets.
+
+# We'll instead add a note in the README about not committing secrets.
+
+# However, to be safe, we can ignore any .json files in data and outputs that are not in the fixtures or examples? 
+# That is too complex.
+
+# Let's just check for secrets before committing and rely on the fact that we are only using synthetic data.
+
+# We'll ignore any file that looks like it might contain secrets by name.
+*secret*
+*credentials*
+*token*

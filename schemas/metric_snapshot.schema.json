@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MetricSnapshot",
+  "type": "object",
+  "required": [
+    "snapshot_id",
+    "publication_id",
+    "captured_at_utc",
+    "window_type",
+    "impressions",
+    "reach",
+    "views",
+    "interactions",
+    "reactions",
+    "comments",
+    "shares",
+    "saves",
+    "clicks",
+    "raw_source",
+    "source_version",
+    "quality_status"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "description": "Unique identifier for the snapshot"
+    },
+    "publication_id": {
+      "type": "string",
+      "description": "Identifier of the publication this snapshot belongs to"
+    },
+    "captured_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the metrics were captured (UTC)"
+    },
+    "window_type": {
+      "type": "string",
+      "enum": ["E0", "E24", "E72", "lifetime"],
+      "description": "Type of window for the snapshot"
+    },
+    "impressions": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of times the publication was displayed"
+    },
+    "reach": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of unique users who saw the publication"
+    },
+    "views": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of times the publication was viewed (for video)"
+    },
+    "interactions": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Total number of interactions (reactions, comments, shares, saves, clicks)"
+    },
+    "reactions": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of reactions (likes, love, etc.)"
+    },
+    "comments": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of comments"
+    },
+    "shares": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of shares"
+    },
+    "saves": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of saves"
+    },
+    "clicks": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of clicks on links or calls to action"
+    },
+    "raw_source": {
+      "type": "string",
+      "description": "Raw source of the data (e.g., platform API response identifier)"
+    },
+    "source_version": {
+      "type": "string",
+      "description": "Version of the schema or data source"
+    },
+    "quality_status": {
+      "type": "string",
+      "enum": ["observed", "missing", "estimated", "invalid"],
+      "description": "Quality status of the metrics"
+    }
+  },
+  "additionalProperties": false
+}
