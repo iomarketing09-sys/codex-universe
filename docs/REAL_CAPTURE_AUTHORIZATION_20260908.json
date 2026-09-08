@@ -1,9 +1,9 @@
 {
-  "authorization_id": "USM-CAPTURE-20260908-01",
+  "authorization_id": "USM-CAPTURE-20260908-02",
   "authorized": true,
   "authorized_by": "Fernando",
   "authorized_at_utc": "2026-09-08T00:00:00Z",
-  "purpose": "Single low-risk lifetime metrics read for Codex validation",
+  "purpose": "Single low-risk Graph API endpoint/permission diagnostic for the authorized post",
   "scope": {
     "platform": "Facebook",
     "account_id": "1036844829507460",
@@ -11,19 +11,18 @@
     "publication_id": "PUB-FB-17_30-44",
     "window_type": "lifetime",
     "max_external_reads": 1,
-    "read_only": true
+    "read_only": true,
+    "graph_api_version": "v26.0",
+    "endpoint": "/{page-post-id}/insights",
+    "query": {
+      "metric": "post_reactions_like_total",
+      "period": "lifetime"
+    },
+    "required_token_type": "page_access_token",
+    "required_permissions": ["read_insights", "pages_read_engagement"],
+    "required_page_task": "ANALYZE"
   },
-  "allowed_metrics": [
-    "impressions",
-    "reach",
-    "views",
-    "interactions",
-    "reactions",
-    "comments",
-    "shares",
-    "saves",
-    "clicks"
-  ],
+  "allowed_metrics": ["post_reactions_like_total"],
   "prohibited": [
     "publishing",
     "editing",
@@ -45,5 +44,8 @@
     "schema_validation_failure",
     "more_than_one_external_read"
   ],
-  "execution_status": "authorized_not_executed"
+  "execution_status": "authorized_not_executed",
+  "reason_for_narrow_scope": "Use one documented post-insight metric first to distinguish endpoint/field validity from token type or permission failure.",
+  "next_step_if_success": "Authorize a separate capture for the remaining valid post metrics.",
+  "next_step_if_error_10": "Do not change token; classify as token type, read_insights, pages_read_engagement, or ANALYZE-task issue and stop."
 }
