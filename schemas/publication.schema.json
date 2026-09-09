@@ -63,6 +63,35 @@
       "type": "string",
       "enum": ["draft", "approved", "scheduled", "published", "cancelled", "failed"],
       "description": "Current status of the publication"
+    },
+    "account_total": {
+      "type": ["number", "null"],
+      "description": "Total revenue in the account (not attributed to any specific post)"
+    },
+    "post_attributed_revenue": {
+      "type": ["number", "null"],
+      "description": "Revenue attributed to this specific post"
+    },
+    "revenue_amount": {
+      "type": ["number", "null"],
+      "description": "Amount of revenue (if known, e.g., from user report)"
+    },
+    "currency": {
+      "type": ["string", "null"],
+      "description": "Currency of the revenue amount (e.g., USD, EUR)"
+    },
+    "window": {
+      "type": ["string", "null"],
+      "description": "Time window for the revenue (e.g., lifetime, 24h)"
+    },
+    "source": {
+      "type": ["string", "null"],
+      "description": "Source of the revenue data (e.g., user_reported, meta_reported)"
+    },
+    "role": {
+      "type": ["string", "null"],
+      "enum": ["test", "control", null],
+      "description": "Role of the publication in the experiment (test or control)"
     }
   },
   "additionalProperties": false

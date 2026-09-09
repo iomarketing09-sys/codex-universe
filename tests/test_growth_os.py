@@ -454,3 +454,148 @@ def test_experiment_with_insufficient_data():
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+def test_experiment_monetization_fields():
+    """Test that experiment can include monetization fields."""
+    experiment = {
+        "experiment_id": "exp_monet_test",
+        "status": "insufficient_data",
+        "monetization_active": True,
+        "monetization_source": "user_reported",
+        "manual_publication": False
+    }
+    is_valid, errors = validate_experiment(experiment)
+    assert is_valid, f"Experiment with monetization fields should be valid. Errors: {errors}"
+
+
+def test_publication_revenue_fields():
+    """Test that publication can include revenue and attribution fields."""
+    publication = {
+        "publication_id": "pub_rev_test",
+        "platform": "instagram",
+        "account_id": "account_001",
+        "asset_ref": "asset_001",
+        "published_at_utc": "2026-09-08T12:00:00Z",
+        "format": "video",
+        "character": "hero",
+        "circle": "fitness",
+        "status": "published",
+        "account_total": 2.25,
+        "post_attributed_revenue": None,
+        "revenue_amount": 1.48,
+        "currency": "USD",
+        "window": "lifetime",
+        "source": "user_reported",
+        "role": "test"
+    }
+    is_valid, errors = validate_publication(publication)
+    assert is_valid, f"Publication with revenue fields should be valid. Errors: {errors}"
+    assert publication["post_attributed_revenue"] is None
+    assert publication["account_total"] == 2.25
+
+
+def test_publication_role_field():
+    """Test that publication role field accepts test, control, or null."""
+    for role in ["test", "control", None]:
+        publication = {
+            "publication_id": f"pub_role_test_{role}",
+            "platform": "instagram",
+            "account_id": "account_001",
+            "asset_ref": "asset_001",
+            "published_at_utc": "2026-09-08T12:00:00Z",
+            "format": "video",
+            "character": "hero",
+            "circle": "fitness",
+            "status": "published",
+            "role": role
+        }
+        is_valid, errors = validate_publication(publication)
+        assert is_valid, f"Publication with role={role} should be valid. Errors: {errors}"
+
+
+def test_account_total_not_attributed_to_post():
+    """Test that account_total is separate from post_attributed_revenue."""
+    publication = {
+        "publication_id": "pub_attrib_test",
+        "platform": "instagram",
+        "account_id": "account_001",
+        "asset_ref": "asset_001",
+        "published_at_utc": "2026-09-08T12:00:00Z",
+        "format": "video",
+        "character": "hero",
+        "circle": "fitness",
+        "status": "published",
+        "account_total": 5.00,
+        "post_attributed_revenue": 3.00,
+        "revenue_amount": 1.48,
+        "currency": "USD",
+        "window": "lifetime",
+        "source": "user_reported",
+        "role": "test"
+    }
+    is_valid, errors = validate_publication(publication)
+    assert is_valid, f"Publication with both account_total and post_attributed_revenue should be valid. Errors: {errors}"
+    assert publication["account_total"] == 5.00
+    assert publication["post_attributed_revenue"] == 3.00
+
+
+def test_user_reported_vs_meta_reported():
+    """Test that source field accepts user_reported and meta_reported."""
+    for source in ["user_reported", "meta_reported", None]:
+        publication = {
+            "publication_id": f"pub_source_test_{source}",
+            "platform": "instagram",
+            "account_id": "account_001",
+            "asset_ref": "asset_001",
+            "published_at_utc": "2026-09-08T12:00:00Z",
+            "format": "video",
+            "character": "hero",
+            "circle": "fitness",
+            "status": "published",
+            "revenue_amount": 1.48 if source == "user_reported" else None,
+            "currency": "USD",
+            "window": "lifetime",
+            "source": source,
+            "role": "test"
+        }
+        is_valid, errors = validate_publication(publication)
+        assert is_valid, f"Publication with source={source} should be valid. Errors: {errors}"
+
+
+def test_experiment_insufficient_data_requirement_with_monetization():
+    """Test that experiment status insufficient_data is correct when not enough posts, with monetization fields."""
+    experiment = {
+        "experiment_id": "exp_insuff_test",
+        "status": "insufficient_data",
+        "monetization_active": True,
+        "monetization_source": "user_reported",
+        "manual_publication": False
+    }
+    is_valid, errors = validate_experiment(experiment)
+    assert is_valid, f"Experiment in insufficient_data should be valid. Errors: {errors}"
+
+
+def test_null_metrics_in_snapshot():
+    """Test that metric snapshot allows null values for metrics (as per schema)."""
+    snapshot = {
+        "snapshot_id": "snap_null_test",
+        "publication_id": "pub_null_test",
+        "captured_at_utc": "2026-09-08T12:30:00Z",
+        "window_type": "E0",
+        "impressions": None,
+        "reach": None,
+        "views": None,
+        "interactions": None,
+        "reactions": None,
+        "comments": None,
+        "shares": None,
+        "saves": None,
+        "clicks": None,
+        "raw_source": "api_response_001",
+        "source_version": "1.0",
+        "quality_status": "missing"
+    }
+    is_valid, errors = validate_metric_snapshot(snapshot)
+    assert is_valid, f"Snapshot with null metrics should be valid. Errors: {errors}"
+
+

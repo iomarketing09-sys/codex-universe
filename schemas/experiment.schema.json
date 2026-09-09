@@ -15,6 +15,18 @@
       "type": "string",
       "enum": ["planned", "running", "closed", "insufficient_data"],
       "description": "Current status of the experiment"
+    },
+    "monetization_active": {
+      "type": "boolean",
+      "description": "Whether monetization is active for this experiment"
+    },
+    "monetization_source": {
+      "type": "string",
+      "description": "Source of monetization data (e.g., user_reported, meta_reported)"
+    },
+    "manual_publication": {
+      "type": "boolean",
+      "description": "Whether the publication was manually published"
     }
   },
   "additionalProperties": false
