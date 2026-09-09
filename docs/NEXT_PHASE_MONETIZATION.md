@@ -1,72 +1,53 @@
-# Next Phase: Monetization Experiment
+# Siguiente fase Codex: monetización y experimento Wilfred
 
-This document outlines the monetization experiment phase for the Universe Sent Me tenant.
+**Propósito:** Definir la implementación mínima para registrar publicaciones, contexto de monetización e hipótesis sin automatizar publicación ni modificar cuentas.
 
-## Experiment Details
+**Estado:** Draft  
+**Fecha de creación:** 2026-09-09  
+**Última actualización:** 2026-09-09  
+**Versión:** 1.0  
+**Autor:** Manus AI (CGO)  
+**Documentos relacionados:** [Contrato Codex–Growth OS](CONTRACT.md), [Autorización de captura](REAL_CAPTURE_AUTHORIZATION_20260908.json), `GrowthOS/16_00_Contrato_Codex_Metricas.md`, `GrowthOS/17_00_Protocolo_Primera_Captura_Real.md`  
+**Organización:** `docs/`
 
-- **Experiment ID**: `EXP-2026-09-WILFRED-MON-01`
-- **Hypothesis ID**: `H-WILFRED-MON-01`
-- **Status**: `insufficient_data` (requires 3 Wilfred posts and 3 control posts)
+## Decisión
 
-## Monetization Tracking
+Codex no debe rehacerse. Debe añadir una capa de contexto experimental y monetización sobre los esquemas actuales. La publicación seguirá siendo manual; Codex solo registra, valida, exporta y compara.
 
-The following fields are tracked for monetization purposes:
+## Cambios mínimos
 
-- `monetization_active`: Boolean indicating if monetization is active
-- `monetization_source`: Source of monetization data (e.g., user_reported)
-- `manual_publication`: Boolean indicating if publication was manually published
+Añadir a la publicación o a un registro experimental:
 
-## Revenue Attribution
+| Campo | Regla |
+|---|---|
+| `experiment_id` | ID estable del experimento |
+| `hypothesis_id` | ID estable de la hipótesis |
+| `monetization_active` | Booleano observado, nunca inferido |
+| `monetization_source` | `user_reported`, `meta_reported` o `missing` |
+| `character_role` | `test` o `control` |
+| `content_family` | Taxonomía editorial existente |
+| `manual_publication` | Booleano observado |
+| `revenue_amount` | Número o `null`; no estimar |
+| `revenue_currency` | `USD` o `null` |
+| `revenue_window` | Ventana explícita o `null` |
+| `revenue_source` | Fuente y fecha del dato |
 
-Revenue is tracked in two distinct ways:
+No mezclar ingreso acumulado de la cuenta con ingreso atribuible a una publicación. Si Meta no entrega atribución por post, registrar el monto como `account_total`, no como revenue del contenido.
 
-- `account_total`: Total revenue in the account (not attributed to any specific post)
-- `post_attributed_revenue`: Revenue attributed to a specific post
+## Experimento inicial
 
-## Revenue Data Fields
+`experiment_id`: `EXP-2026-09-WILFRED-MON-01`  
+`hypothesis_id`: `H-WILFRED-MON-01`  
+Hipótesis: con monetización activa, posts comparables de Wilfred con humor seco o irreverente generan más ingreso por publicación que controles comparables de otros personajes.
 
-When revenue data is available:
+La muestra mínima para un veredicto es **3 posts de Wilfred y 3 controles**. Antes de esa muestra el estado debe ser `insufficient_data` o `inconclusive`; nunca `supported`.
 
-- `revenue_amount`: Numerical value of revenue
-- `currency`: Currency code (e.g., USD)
-- `window`: Time window for the revenue (e.g., lifetime, 24h)
-- `source`: Source of revenue data (user_reported or meta_reported)
+## Registro inicial
 
-## Experiment Roles
+Los dos posts del 5 de septiembre ya deben importarse como publicaciones observadas, pero sin inventar métricas. El post de Wilfred del 6 de septiembre y sus USD 1.48 se registran como `user_reported` hasta que exista evidencia nativa exportable. Los USD 2.25 se registran como total acumulado de cuenta al momento del reporte, no como suma atribuida a posts.
 
-Publications in the experiment are assigned roles:
+## Criterios de aceptación
 
-- `test`: Publications using the Wilfred treatment
-- `control`: Publications using the baseline approach
+Codex debe probar con fixtures sintéticos que: los campos nuevos son opcionales o `null`; una fuente `user_reported` no se convierte en `meta_reported`; el ingreso acumulado no se asigna a un post; faltantes permanecen `null`; los controles y tests se cuentan por separado; y un experimento con menos de 3+3 publicaciones queda como insuficiente.
 
-## Synthetic Data Fixtures
-
-For development and testing, the following synthetic data is provided:
-
-### Observed Posts from September 5
-Two posts observed on September 5 with missing metrics set to `null`.
-
-### Revenue Data
-- **User-reported revenue**: USD 1.48 (never treated as meta-reported)
-- **Account total**: USD 2.25 (not attributed to any specific post)
-
-## Validation Rules
-
-1. No revenue data should be invented or estimated
-2. `null` values indicate unavailable data and must not be converted to zero
-3. `account_total` must never be attributed to individual publications
-4. `user_reported` and `meta_reported` sources must remain strictly separated
-5. Experiment remains in `insufficient_data` state until 3 Wilfred + 3 control posts are available
-6. No new Meta API calls should be made
-7. No permission changes should be requested
-8. Publications must not be automated
-9. No recommendations should be generated
-10. No recurring capture should be implemented
-
-## Implementation Notes
-
-The monetization layer has been added as a minimal extension to the existing schema:
-- Experiment schema now includes monetization fields
-- Publication schema now includes revenue attribution and role fields
-- All existing validation and normalization logic has been preserved
-- New tests verify the monetization-specific constraints
+No implementar todavía conectores, publicación automática, recomendaciones automáticas ni captura recurrente.
