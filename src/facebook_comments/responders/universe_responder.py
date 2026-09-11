@@ -12,7 +12,7 @@ class UniverseResponder:
     def __init__(self) -> None:
         # Simple keyword maps for classification (can be expanded)
         self.humor_keywords = ["jaja", "ja ja", "😂", "lol", "risas", "crack", "divertido", "gracioso", "🤣", "jajaja"]
-        self.identification_keywords = ["me pasa", "soy yo", "igual", "también", "yo también", "a mí me"]
+        self.identification_keywords = ["me pasa", "soy yo", "literalmente yo", "ese soy yo", "idéntico", "lo soy", "igual", "también", "yo también", "a mí me"]
         self.personal_experience_keywords = ["me pasó", "mi experiencia", "personal", "en mi caso", "a mí me sucedió"]
         self.story_keywords = ["novio", "novia", "historia", "chisme", "cuentame", "algo pasó", "algo pasó"]
         self.question_keywords = ["?", "cómo", "qué", "cuándo", "dónde", "por qué", "cuál", "será"]
@@ -23,6 +23,14 @@ class UniverseResponder:
         self.commercial_keywords = ["compro", "vendo", "precio", "cuánto cuesta", "dónde compro", "link", "promo", "descuento", "oferta"]
         self.spam_keywords = ["http", ".com", "www", "follow me", "suscribete", "visita mi", "gana dinero", "bitcoin", "cripto"]
         self.mention_pattern = "@"
+
+    def _context_value(self, context: Dict[str, Any], *keys: str) -> str:
+        """Read canonical context while tolerating legacy fixture keys."""
+        for key in keys:
+            value = context.get(key)
+            if value:
+                return str(value)
+        return ""
 
     def _classify_comment(self, comment: str) -> str:
         comment_lower = comment.lower()
@@ -78,15 +86,21 @@ class UniverseResponder:
             import re
             words = re.findall(r"\b[a-zA-Z]{3,}\b", text.lower())
             return [w for w in words if w not in stopwords]
-        meme_text = publication_context.get("meme_text", "")
-        caption = publication_context.get("caption", "")
-        character = publication_context.get("character", "")
+        meme_text = self._context_value(publication_context, "meme_text", "meme")
+        caption = self._context_value(publication_context, "caption")
+        character = self._context_value(publication_context, "character")
         comment_lower = comment.lower()
+
+        # An explicit question is classified by conversational purpose first,
+        # even when it repeats words from the meme text.
+        question_indicators = ["cómo", "qué", "cuándo", "dónde", "por qué", "cuál", "será", "?"]
+        if any(q in comment_lower for q in question_indicators):
+            return "question_about_content"
         
         # 1. direct_meme_reference
         if meme_text:
             for w in sig_words(meme_text):
-                if w in comment_lower:
+                if re.search(r"\b" + re.escape(w) + r"\b", comment_lower):
                     return "direct_meme_reference"
         
         # 2. character_reference
@@ -102,7 +116,7 @@ class UniverseResponder:
         # 4. topic_reference (substring match from caption)
         if caption:
             for w in sig_words(caption):
-                if w in comment_lower:
+                if re.search(r"\b" + re.escape(w) + r"\b", comment_lower):
                     return "topic_reference"
         
         # 5. personal_identification
@@ -110,6 +124,10 @@ class UniverseResponder:
         for p in personal_patterns:
             if p in comment_lower:
                 return "personal_identification"
+
+        # General reactions support the publication even without repeating its text.
+        if any(k in comment_lower for k in self.affection_keywords):
+            return "general_reaction"
         
         # 6. humor_extension
         humor_indicators = ["jaja", "ja ja", "😂", "lol", "risas", "crack", "divertido", "gracioso", "🤣", "jajaja"]
@@ -124,19 +142,19 @@ class UniverseResponder:
                 return "story_extension"
         
         # 8. question_about_content
-        question_indicators = ["cómo", "qué", "cuándo", "dónde", "por qué", "cuál", "será", "?"]
-        for q in question_indicators:
-            if q in comment_lower:
-                return "question_about_content"
-        
         # 9. commercial_reference
         commercial_indicators = ["compro", "vendo", "precio", "cuánto cuesta", "dónde compro", "link", "promo", "descuento", "oferta", "comprar", "vender"]
         for c in commercial_indicators:
             if c in comment_lower:
                 return "commercial_reference"
-        
-        # 10. unrelated vs unclear
+
+        # A short reaction is usually a response to the meme, not unrelated.
         comment_sig = sig_words(comment)
+        reaction_words = {"jaja", "jajaja", "amo", "adoro", "me encanta", "literal", "real", "same", "ouch"}
+        if comment_sig and any(re.search(r"\b" + re.escape(word) + r"\b", comment_lower) for word in reaction_words):
+            return "general_reaction"
+
+        # 11. unrelated vs unclear
         if comment_sig:
             return "unrelated"
         else:
@@ -166,7 +184,7 @@ class UniverseResponder:
         if comment_type == "other":
             if relation_to_meme in ["direct_meme_reference", "character_reference", "caption_reference"]:
                 return "respond"
-            if relation_to_meme in ["topic_reference", "personal_identification", "humor_extension", "story_extension"]:
+            if relation_to_meme in ["topic_reference", "personal_identification", "humor_extension", "story_extension", "general_reaction"]:
                 return "review"
             if relation_to_meme in ["unrelated", "unclear"]:
                 return "no_response"
@@ -177,8 +195,8 @@ class UniverseResponder:
         comment: str,
         comment_type: str,
     ) -> str:
-        meme_text = publication_context.get("meme_text", "")
-        character = publication_context.get("character", "")
+        meme_text = self._context_value(publication_context, "meme_text", "meme")
+        character = self._context_value(publication_context, "character")
         # Simple templated responses following manual: first person singular, brief, humorous when appropriate
         if comment_type == "humor":
             return "JAJAJA 😂"
@@ -193,10 +211,7 @@ class UniverseResponder:
         if comment_type == "story_or_gossip":
             return "JAJAJA aquí hay una historia que no nos están contando completa. 👀"
         if comment_type == "question":
-            # Try to answer briefly if we can, else generic
-            if meme_text:
-                return f"Buena pregunta. En cuanto al meme: {meme_text}"
-            return "Buena pregunta. Déjame pensar..."
+            return "Buena pregunta; el meme va justo de eso. 👀"
         if comment_type == "affection":
             return "¡Gracias! Me alegra que te guste. 😊"
         if comment_type == "opinion":

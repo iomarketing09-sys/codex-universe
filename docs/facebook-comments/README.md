@@ -82,12 +82,39 @@ Filter Reason: PASSED_FILTERS
 Processed: True
 Needs Response: True
 Response: ¡Gracias! Me alegra que te guste. 😊
-Type: humor
+Type: affection
 Intent: affection
-Relation to Meme: direct
+Relation to Meme: general_reaction
 Decision: respond
 Risk Level: low
 ```
+
+### Classification Contract
+
+`UniverseResponder.respond()` separates four decisions: classification, apparent intent, relationship to the publication, and operational decision. The relationship is evaluated against the normalized context fields `meme_text`, `caption`, and `character`.
+
+Relationship matching uses **complete words**, not arbitrary substrings. This prevents false positives such as matching `mente` inside `literalmente`. Explicit questions are classified as `question_about_content` before text-overlap checks. Positive reactions that support the post without repeating its wording use `general_reaction`, not `unrelated`.
+
+Current relationship values include `direct_meme_reference`, `character_reference`, `caption_reference`, `topic_reference`, `personal_identification`, `general_reaction`, `humor_extension`, `story_extension`, `question_about_content`, `commercial_reference`, `unrelated`, and `unclear`.
+
+The normalized publication context uses these keys:
+
+```json
+{
+  "publication_id": "122160625695072582",
+  "published_at": "5 de Septiembre 13:50",
+  "asset_ref": "Reuse 06 Junio - 260714",
+  "post_url": "https://www.facebook.com/photo/?fbid=122160625695072582",
+  "character": "",
+  "visual_context": "",
+  "meme_text": "Historieta de Universe sobre caer con una persona tóxica",
+  "caption": ""
+}
+```
+
+For `¡Esto es genial! Me encanta el meme.`, the expected result is `comment_type=affection`, `relation_to_meme=general_reaction`, `decision=respond`, with the brief proposal `¡Gracias! Me alegra que te guste. 😊`.
+
+Proposals remain suggestions only. They must enter the human approval step and must never be published automatically.
 
 ## Configuration
 
@@ -155,4 +182,3 @@ python -m pytest tests/ -v
 3. **ALWAYS** use `--dry-run` (default) for testing and development
 4. **NEVER** use `--live` without explicit intention to publish
 5. The system is designed to err on the side of safety - when in doubt, it blocks action
-

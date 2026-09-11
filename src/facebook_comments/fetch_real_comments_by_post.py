@@ -8,10 +8,11 @@ import re
 # Add the current directory to the path so we can import universe_responder
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from universe_responder import UniverseResponder, parse_publication_contexts_real
+from universe_responder import UniverseResponder
+from context.parse_real_pubs import parse_publication_contexts_real
 
 # Load the fixture contexts
-FIXTURE_PATH = os.path.join(os.path.dirname(__file__), '..', 'Coment_Responses_Universe', 'Publication_Contexts_Real_Universe.md')
+FIXTURE_PATH = os.path.join(os.path.dirname(__file__), 'context', 'Publication_Contexts_Real_Universe.md')
 contexts = parse_publication_contexts_real(FIXTURE_PATH)
 # Create a mapping from post ID (extracted from postURL) to context
 def extract_fbid(url):
