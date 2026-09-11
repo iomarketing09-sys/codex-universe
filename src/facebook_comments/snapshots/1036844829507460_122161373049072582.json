@@ -1,0 +1,61 @@
+{
+  "id": "1036844829507460_122161373049072582",
+  "from": {
+    "name": "Universe Sent Me",
+    "id": "1036844829507460"
+  },
+  "created_time": "2026-09-07T18:30:01+0000",
+  "is_published": true,
+  "permalink_url": "https://www.facebook.com/photo.php?fbid=122161373049072582&set=a.122095282845072582&type=3",
+  "shares": {
+    "count": 19
+  },
+  "comments": {
+    "data": [
+      {
+        "created_time": "2026-09-07T19:41:26+0000",
+        "from": {
+          "name": "Universe Sent Me",
+          "id": "1036844829507460"
+        },
+        "message": "@seguidores Universe Sent Me",
+        "id": "122161373163072582_1848820899259576"
+      },
+      {
+        "created_time": "2026-09-07T21:43:10+0000",
+        "message": "Como lo supo??",
+        "id": "122161373163072582_1092870200375400"
+      },
+      {
+        "created_time": "2026-09-07T20:41:29+0000",
+        "message": "shhhh \ud83e\udd2b",
+        "id": "122161373163072582_1380427816973556"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "MwZDZD",
+        "after": "MQZDZD"
+      }
+    },
+    "summary": {
+      "order": "ranked",
+      "total_count": 3,
+      "can_comment": true
+    }
+  },
+  "reactions": {
+    "data": [],
+    "paging": {
+      "cursors": {
+        "before": "QVFIVFN0dkVLbkQwZAXZA2MFBzQ1F0Sm51eHYzQWVVVnhCT0VnZA2lscW80X2NYZAVZA3ZAUZAOQjZAiRldhYkhOTWRDT3Fhdm9LdndrXy1TaUpoSHBqVnR0V1Q1anZAB",
+        "after": "QVFIVDhwQVpwNk1FVk55THpDbndZAWUgyMjFEQy1wUzZAaZAE1wakYzU25USWRHc3RPb2o5M0xPeGprbl9MdlZAabV9vX2NkTkJYY1NCV0hUdkVPOEhRMGtEd1N3"
+      },
+      "next": "https://graph.facebook.com/v26.0/1036844829507460_122161373049072582/reactions?access_token=EAFzZAVyseuZAsBSSuS5FdHI9ZAxS0ZCFuQGBto1p7VvVKZA962nI0U5zKg9NnTqerbUQCeOs0QxxjRhIm8voWFeimUNQdd8ot40rfe5ID7GUFLTEVIZAhaUOZCgZAO61iSV9eNwpxqynrvigJG638mNGrcCOZCdITCgFihydykdAwOu8ooy5IZCIvqX0VxPNVxVypUsIWNODwjG5bljdSL5LlOSYzi&summary=true&limit=25&after=QVFIVDhwQVpwNk1FVk55THpDbndZAWUgyMjFEQy1wUzZAaZAE1wakYzU25USWRHc3RPb2o5M0xPeGprbl9MdlZAabV9vX2NkTkJYY1NCV0hUdkVPOEhRMGtEd1N3"
+    },
+    "summary": {
+      "total_count": 65,
+      "viewer_reaction": "NONE"
+    }
+  }
+}
