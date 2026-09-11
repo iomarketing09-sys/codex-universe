@@ -581,6 +581,9 @@ def publish_approved(approval_file: str):
     """
     Publish approved comments from an approval file.
     Requires explicit --publish-approved flag.
+    
+    LIVE publishing is intentionally disabled in this pilot.
+    This function only validates the approval file format.
     """
     print("🚫 PUBLISHING FUNCTIONALITY DISABLED FOR SAFETY")
     print("   This pilot system does not implement actual publishing.")

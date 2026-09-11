@@ -137,3 +137,4 @@ src/facebook_comments/real_comments_evaluation*.txt
 # Logs
 logs/
 *.log
+*.pyc
