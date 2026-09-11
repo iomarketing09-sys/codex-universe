@@ -70,7 +70,15 @@ class CommentProcessor:
     
     def _load_environment(self):
         """Load environment variables from .env files."""
-        # Load integration environment
+        # Load general .env first (if exists)
+        if os.path.exists(".env"):
+            with open(".env", "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, value = line.split("=", 1)
+                        os.environ[key.strip()] = value.strip()
+        # Load tenant-specific .env second, so it takes precedence
         tenant_env = "tenants/universe/.env"
         if os.path.exists(tenant_env):
             with open(tenant_env, "r") as f:
@@ -79,16 +87,6 @@ class CommentProcessor:
                     if line and not line.startswith("#") and "=" in line:
                         key, value = line.split("=", 1)
                         os.environ[key.strip()] = value.strip()
-        
-        # Also check for .env in current directory
-        if os.path.exists(".env"):
-            with open(".env", "r") as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        key, value = line.split("=", 1)
-                        os.environ[key.strip()] = value.strip()
-    
     def _get_meta_token(self) -> Optional[str]:
         """Get Meta access token from environment."""
         return os.environ.get("META_ACCESS_TOKEN")
