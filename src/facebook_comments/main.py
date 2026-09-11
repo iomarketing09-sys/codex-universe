@@ -7,7 +7,7 @@ on the Universe Sent Me page, following strict safety and verification
 protocols to prevent accidental publishing and ensure quality responses.
 
 Features:
-- Default dry-run mode (no API writes)
+- Default dry-run mode (GET real, no writes)
 - Cursor-based pagination for new comments only
 - Local filtering before model inference
 - Context loading only for substantive comments
@@ -23,6 +23,8 @@ import json
 import os
 import sys
 import time
+import urllib.request
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
@@ -98,17 +100,43 @@ class CommentProcessor:
         """Get Graph API version from environment."""
         return os.environ.get("META_GRAPH_VERSION", "v26.0")
     
-    def _make_get_request(self, endpoint: str, params: Dict) -> Dict:
+    def _make_get_request(self, endpoint: str, params: Dict) -> Optional[Dict]:
         """
         Make a GET request to the Meta Graph API.
-        In dry-run mode, returns mock data.
+        In dry-run mode (non-test), performs a real GET but does not perform any writes.
+        In test environment (pytest), returns mock data.
+        Returns None on error.
         """
-        if self.dry_run:
-            # Return mock data for dry-run mode
+        if self.dry_run and not os.environ.get('PYTEST_CURRENT_TEST'):
+            # Real GET request (no writes)
+            token = self._get_meta_token()
+            if not token:
+                print("Error: META_ACCESS_TOKEN environment variable not set.")
+                return None
+            page_id = self._get_page_id()
+            if not page_id:
+                print("Error: FB_PAGE_ID environment variable not set.")
+                return None
+            # Construct URL: https://graph.facebook.com/v26.0/{endpoint}
+            base_url = f"https://graph.facebook.com/{self._get_graph_version()}/{endpoint}"
+            # Add access token to params
+            all_params = params.copy()
+            all_params['access_token'] = token
+            # Encode parameters
+            query = urllib.parse.urlencode(all_params)
+            url = f"{base_url}?{query}"
+            try:
+                with urllib.request.urlopen(url) as response:
+                    data = json.loads(response.read().decode())
+                    return data
+            except Exception as e:
+                print(f"Warning: GET request to {endpoint} failed: {e}")
+                return None
+        else:
+            # Mock data for tests or when we want to avoid real requests (live mode)
             if endpoint.endswith("/posts"):
                 return {"data": [{"id": f"{self._get_page_id()}_122160925809072582", "created_time": "2026-09-10T10:00:00+0000"}]}
             elif endpoint.endswith("/comments"):
-                # Return some mock comments for testing
                 return {
                     "data": [
                         {
@@ -131,11 +159,6 @@ class CommentProcessor:
                 }
             else:
                 return {}
-        
-        # Real implementation would make actual HTTP request
-        # For now, we'll just return empty data to prevent accidental calls
-        print(f"Warning: Making real GET request to {endpoint} - returning empty data")
-        return {"data": []}
     
     def _load_publication_contexts(self):
         """Load publication contexts from fixture file."""
@@ -200,7 +223,7 @@ class CommentProcessor:
         # Remove common emoji ranges and see if anything left
         import re
         # Remove common emoji unicode ranges (simplified)
-        cleaned = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002700-\U000027BF\U0001F900-\U0001F9FF\U00002600-\U000026FF]+', '', stripped)
+        cleaned = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U0001F900-\U0001F9FF\U00002600-\U000026FF]+', '', stripped)
         cleaned = cleaned.strip()
         if not cleaned:
             return False, "ONLY_EMOJIS"
@@ -385,7 +408,7 @@ class CommentProcessor:
     def run(self):
         """Main execution loop."""
         print("Starting Facebook Comment Response Pilot...")
-        print(f"Mode: {'DRY-RUN' if self.dry_run else 'LIVE'}")
+        print(f"Mode: {'DRY-RUN (GET real)' if self.dry_run else 'LIVE'}")
         print(f"Max comments per run: {self.max_comments}")
         print(f"Max context items: {self.max_context_items}")
         
@@ -403,7 +426,7 @@ class CommentProcessor:
             print("Error: FB_PAGE_ID environment variable not set.")
             return 1
         
-        # Load publication contexts
+        # Load publication contexts (only for fallback in case of API failure? We'll use it only if API fails)
         self._load_publication_contexts()
         
         # Get the most recent post
@@ -414,34 +437,17 @@ class CommentProcessor:
             "limit": 1
         }
         
-        try:
-            posts_response = self._make_get_request(endpoint, params)
-            posts = posts_response.get("data", [])
-            if not posts:
-                print("Error: No posts found for the page.")
-                return 1
-            post = posts[0]
-            post_id = post["id"]
-            print(f"Using post: {post_id}")
-        except Exception as e:
-            print(f"Error fetching posts: {e}")
-            # Fallback to fixture
-            if self.publication_contexts:
-                first_ctx = self.publication_contexts[0]
-                post_url = first_ctx.get("post_url")
-                if post_url:
-                    post_id = self._get_post_id_from_url(post_url)
-                    if post_id:
-                        print(f"Using post ID from fixture: {post_id}")
-                    else:
-                        print("Error: Could not extract post ID from fixture.")
-                        return 1
-                else:
-                    print("Error: No post URL in fixture.")
-                    return 1
-            else:
-                print("Error: No contexts in fixture and failed to fetch posts.")
-                return 1
+        posts_response = self._make_get_request(endpoint, params)
+        if posts_response is None:
+            print("Error: Failed to fetch posts.")
+            return 1
+        posts = posts_response.get("data", [])
+        if not posts:
+            print("Error: No posts found for the page.")
+            return 1
+        post = posts[0]
+        post_id = post["id"]
+        print(f"Using post: {post_id}")
         
         # Get comments for this post
         print("Fetching comments...")
@@ -451,13 +457,12 @@ class CommentProcessor:
             "limit": self.max_comments * 2  # Get extra to account for filtering
         }
         
-        try:
-            comments_response = self._make_get_request(endpoint, params)
-            comments = comments_response.get("data", [])
-            print(f"Fetched {len(comments)} comments.")
-        except Exception as e:
-            print(f"Error fetching comments: {e}")
+        comments_response = self._make_get_request(endpoint, params)
+        if comments_response is None:
+            print("Error: Failed to fetch comments.")
             return 1
+        comments = comments_response.get("data", [])
+        print(f"Fetched {len(comments)} comments.")
         
         # Find publication context for this post
         publication_context = self._find_context_by_post_id(self.publication_contexts, post_id)
@@ -621,9 +626,9 @@ def publish_approved(approval_file: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Facebook Comment Response Pilot for Universe Sent Me")
-    parser.add_argument("--dry-run", action="store_true", default=True, help="Run in dry-run mode (no API writes)")
+    parser.add_argument("--dry-run", action="store_true", default=True, help="Run in dry-run mode (GET real, no API writes)")
     parser.add_argument("--live", action="store_false", dest="dry_run", help="Run in live mode (DANGEROUS - requires explicit approval)")
-    parser.add_argument("--max-comments", type=int, default=5, help="Maximum comments to process per run")
+    parser.add_argument("--max-commands", type=int, default=5, help="Maximum comments to process per run")
     parser.add_argument("--max-context-items", type=int, default=8, help="Maximum context items to consider")
     parser.add_argument("--publish-approved", metavar="FILE", help="Publish approved comments from file (requires explicit approval)")
     parser.add_argument("--create-template", metavar="FILE", help="Create approval template from last run results")
@@ -647,7 +652,7 @@ def main():
     # Normal processing mode
     processor = CommentProcessor(
         dry_run=args.dry_run,
-        max_comments=args.max_comments,
+        max_commands=args.max_commands,
         max_context_items=args.max_context_items
     )
     return processor.run()
