@@ -48,6 +48,7 @@ class CommentProcessor:
         self.seen_comments_file.parent.mkdir(exist_ok=True)
         self.seen_comments = self._load_seen_comments()
         self.publication_contexts = []
+        self.page_token = None  # Will be set after token exchange in run()
         
     def _load_seen_comments(self) -> Dict[str, str]:
         """Load previously seen comment IDs to avoid reprocessing."""
@@ -100,22 +101,17 @@ class CommentProcessor:
         """Get Graph API version from environment."""
         return os.environ.get("META_GRAPH_VERSION", "v26.0")
     
-    def _make_get_request(self, endpoint: str, params: Dict) -> Optional[Dict]:
+    def _make_get_request_with_token(self, endpoint: str, params: Dict, token: str) -> Optional[Dict]:
         """
-        Make a GET request to the Meta Graph API.
+        Make a GET request to the Meta Graph API with the given token.
         In dry-run mode (non-test), performs a real GET but does not perform any writes.
         In test environment (pytest), returns mock data.
         Returns None on error.
         """
         if self.dry_run and not os.environ.get('PYTEST_CURRENT_TEST'):
             # Real GET request (no writes)
-            token = self._get_meta_token()
             if not token:
-                print("Error: META_ACCESS_TOKEN environment variable not set.")
-                return None
-            page_id = self._get_page_id()
-            if not page_id:
-                print("Error: FB_PAGE_ID environment variable not set.")
+                print("Error: Token not provided for GET request.")
                 return None
             # Construct URL: https://graph.facebook.com/v26.0/{endpoint}
             base_url = f"https://graph.facebook.com/{self._get_graph_version()}/{endpoint}"
@@ -135,18 +131,18 @@ class CommentProcessor:
         else:
             # Mock data for tests or when we want to avoid real requests (live mode)
             if endpoint.endswith("/posts"):
-                return {"data": [{"id": f"{self._get_page_id()}_122160925809072582", "created_time": "2026-09-10T10:00:00+0000"}]}
+                return {"data": [{"id": f"1036844829507460_122160925809072582", "created_time": "2026-09-10T10:00:00+0000"}]}
             elif endpoint.endswith("/comments"):
                 return {
                     "data": [
                         {
-                            "id": f"{self._get_page_id()}_122160925809072582_1000001",
+                            "id": f"1036844829507460_122160925809072582_1000001",
                             "from": {"id": "123456789", "name": "Test User"},
                             "message": "¡Esto es genial! Me encanta el meme.",
                             "created_time": "2026-09-10T11:00:00+0000"
                         },
                         {
-                            "id": f"{self._get_page_id()}_122160925809072582_1000002",
+                            "id": f"1036844829507460_122160925809072582_1000002",
                             "from": {"id": "987654321", "name": "Another User"},
                             "message": "¿De qué trata este meme?",
                             "created_time": "2026-09-10T11:05:00+0000"
@@ -160,6 +156,22 @@ class CommentProcessor:
             else:
                 return {}
     
+    def _exchange_page_token(self, user_token: str, page_id: str) -> Optional[str]:
+        """
+        Exchange user token for page token.
+        GET /{page_id}?fields=access_token&access_token={user_token}
+        Returns the page token string or None on failure.
+        """
+        endpoint = f"{page_id}"
+        params = {
+            "fields": "access_token"
+        }
+        # Note: we pass the user_token as the token for this request
+        response = self._make_get_request_with_token(endpoint, params, user_token)
+        if response and isinstance(response, dict) and "access_token" in response:
+            return response["access_token"]
+        return None
+
     def _load_publication_contexts(self):
         """Load publication contexts from fixture file."""
         fixture_path = "src/facebook_comments/context/Publication_Contexts_Real_Universe.md"
@@ -416,7 +428,8 @@ class CommentProcessor:
         self._load_environment()
         
         # Check for required credentials
-        if not self._get_meta_token():
+        user_token = self._get_meta_token()
+        if not user_token:
             print("Error: META_ACCESS_TOKEN environment variable not set.")
             print("Please set it in your .env file or environment.")
             return 1
@@ -426,6 +439,18 @@ class CommentProcessor:
             print("Error: FB_PAGE_ID environment variable not set.")
             return 1
         
+        # Exchange user token for page token (only in dry-run non-test)
+        if self.dry_run and not os.environ.get('PYTEST_CURRENT_TEST'):
+            self.page_token = self._exchange_page_token(user_token, page_id)
+            if not self.page_token:
+                print("Error: Failed to exchange user token for page token.")
+                return 1
+        else:
+            # In test or live mode, we don't have a real page token from exchange.
+            # For test, we will rely on mock data in _make_get_request_with_token.
+            # For live, we don't implement live mode yet.
+            self.page_token = None
+
         # Load publication contexts (only for fallback in case of API failure? We'll use it only if API fails)
         self._load_publication_contexts()
         
@@ -437,7 +462,7 @@ class CommentProcessor:
             "limit": 1
         }
         
-        posts_response = self._make_get_request(endpoint, params)
+        posts_response = self._make_get_request_with_token(endpoint, params, self.page_token)
         if posts_response is None:
             print("Error: Failed to fetch posts.")
             return 1
@@ -457,7 +482,7 @@ class CommentProcessor:
             "limit": self.max_comments * 2  # Get extra to account for filtering
         }
         
-        comments_response = self._make_get_request(endpoint, params)
+        comments_response = self._make_get_request_with_token(endpoint, params, self.page_token)
         if comments_response is None:
             print("Error: Failed to fetch comments.")
             return 1
@@ -652,7 +677,7 @@ def main():
     # Normal processing mode
     processor = CommentProcessor(
         dry_run=args.dry_run,
-        max_commands=args.max_commands,
+        max_comments=args.max_commands,
         max_context_items=args.max_context_items
     )
     return processor.run()

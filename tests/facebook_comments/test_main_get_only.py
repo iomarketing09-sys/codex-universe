@@ -30,7 +30,11 @@ def test_dry_run_get_only_real_success(monkeypatch, capsys):
     monkeypatch.delenv('PYTEST_CURRENT_TEST', raising=False)
 
     # Mock responses
+    # 1. Token exchange response
+    token_exchange_response = {"access_token": "page_token_fake"}
+    # 2. Posts response
     post_response = {"data": [{"id": "12345_111", "created_time": "2026-09-10T10:00:00+0000"}]}
+    # 3. Comments response
     comments_response = {
         "data": [
             {
@@ -42,7 +46,7 @@ def test_dry_run_get_only_real_success(monkeypatch, capsys):
         ]
     }
 
-    mock_responses = [post_response, comments_response]
+    mock_responses = [token_exchange_response, post_response, comments_response]
     call_count = 0
 
     def mock_urlopen(url, data=None, timeout=None):
@@ -60,8 +64,8 @@ def test_dry_run_get_only_real_success(monkeypatch, capsys):
         with patch.object(processor, '_load_environment'):
             result = processor.run()
 
-    # Check that we got two calls
-    assert call_count == 2
+    # Check that we got three calls
+    assert call_count == 3
 
     # Check that the processor ran successfully (return code 0)
     assert result == 0
@@ -103,7 +107,7 @@ def test_dry_run_get_only_http_error(monkeypatch, capsys):
     monkeypatch.setenv('META_GRAPH_VERSION', 'v26.0')
     monkeypatch.delenv('PYTEST_CURRENT_TEST', raising=False)
 
-    # We'll simulate an HTTP error on the first call (posts)
+    # We'll simulate an HTTP error on the first call (token exchange)
     call_count = 0
 
     def mock_urlopen(url, data=None, timeout=None):
@@ -114,7 +118,7 @@ def test_dry_run_get_only_http_error(monkeypatch, capsys):
             # Simulate an HTTP error by raising an exception
             raise Exception("HTTP Error 404: Not Found")
         call_count += 1
-        # For the second call, we never reach here because we return early on error, but just in case
+        # For the subsequent calls, we never reach here because we return early on error, but just in case
         return MockResponse({})
 
     with patch('urllib.request.urlopen', side_effect=mock_urlopen):
@@ -123,11 +127,12 @@ def test_dry_run_get_only_http_error(monkeypatch, capsys):
         with patch.object(processor, '_load_environment'):
             result = processor.run()
 
-    # Should return error code because the posts request failed
+    # Should return error code because the token exchange request failed
     assert result == 1
     captured = capsys.readouterr()
     # We expect an error message about failed GET request
     assert ('Warning: GET request to' in captured.out or
+            'Error: Failed to exchange user token for page token.' in captured.out or
             'Error: Failed to fetch posts.' in captured.out)
 
 
@@ -148,7 +153,9 @@ def test_dry_run_get_only_uses_get_method_and_endpoint(monkeypatch):
         captured_urls.append(url)
         captured_data.append(data)
         # Return a minimal valid response to avoid errors in the processor
-        if '/posts' in url:
+        if 'fields=access_token' in url:
+            return MockResponse({"access_token": "page_token_fake"})
+        elif '/posts' in url:
             return MockResponse({"data": [{"id": "12345_111", "created_time": "2026-09-10T10:00:00+0000"}]})
         elif '/comments' in url:
             return MockResponse({
@@ -170,15 +177,19 @@ def test_dry_run_get_only_uses_get_method_and_endpoint(monkeypatch):
         with patch.object(processor, '_load_environment'):
             processor.run()
 
-    # Check that we have two URLs
-    assert len(captured_urls) == 2
-    # Check that the first URL is for posts and the second for comments
-    assert any('/posts' in url for url in captured_urls)
-    assert any('/comments' in url for url in captured_urls)
-    # Check that the data is None (meaning GET)
+    # Check that we have three URLs
+    assert len(captured_urls) == 3
+    # Check that the data is None (meaning GET) for all
     assert all(d is None for d in captured_data)
     # Check that the token is in the URL (as a query parameter) - this is expected for the API call
+    # First URL: token exchange with user token
     assert any('access_token=fake_token' in url for url in captured_urls)
+    # Second and third URLs: use the page token returned from the token exchange
+    assert any('access_token=page_token_fake' in url for url in captured_urls[1:])
+    # Check endpoints
+    assert any('/12345?fields=access_token' in url for url in captured_urls)
+    assert any('/12345/posts' in url for url in captured_urls)
+    assert any('/12345_111/comments' in url for url in captured_urls)
 
 
 def test_under_pytest_uses_mock_data(monkeypatch, capsys):
