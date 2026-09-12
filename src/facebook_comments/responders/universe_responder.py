@@ -177,34 +177,54 @@ class UniverseResponder:
         comment: str,
         comment_type: str,
     ) -> str:
-        meme_text = publication_context.get("meme_text", "")
-        character = publication_context.get("character", "")
-        # Simple templated responses following manual: first person singular, brief, humorous when appropriate
+        """Generate a short response from the meme/comment relationship.
+
+        The text is intentionally composed from context rather than a single
+        catch-all reply. Publication context is treated as untrusted input:
+        it is quoted only when a question genuinely needs clarification.
+        """
+        meme_text = (publication_context.get("meme_text") or "").strip()
+        caption = (publication_context.get("caption") or "").strip()
+        character = (publication_context.get("character") or "").strip()
+        comment_lower = comment.lower()
+        cosmic = "El universo" if not character else f"{character}"
+
         if comment_type == "humor":
-            return "JAJAJA 😂"
+            if any(word in comment_lower for word in ("jajaja", "😂", "🤣", "lol")):
+                return f"{cosmic} tomó nota de esa risa. 😂"
+            return f"Ese remate ya venía con órbita propia. 😂"
+
         if comment_type == "identification":
-            # Use a generic identification response
-            return "Entonces ya somos dos. 😂"
+            return "Lo sospechábamos, pero gracias por confirmarlo. 😂"
+
         if comment_type == "personal_experience":
-            if meme_text:
-                # Use a twist on the meme text
-                return f"El universo trabajando horas extra, aparentemente. 😂"
-            return "Vaya, suena intenso. Espero que estés mejor ahora. 🙏"
+            return "El universo también guarda historias que llegan sin pedir permiso. Gracias por compartirla."
+
         if comment_type == "story_or_gossip":
-            return "JAJAJA aquí hay una historia que no nos están contando completa. 👀"
+            return "Eso no es chisme: es investigación de campo con excelente memoria. 👀"
+
         if comment_type == "question":
-            # Try to answer briefly if we can, else generic
-            if meme_text:
-                return f"Buena pregunta. En cuanto al meme: {meme_text}"
-            return "Buena pregunta. Déjame pensar..."
+            if character:
+                return f"Buena pregunta; {character} probablemente tendría una teoría. 👀"
+            if meme_text and len(meme_text) < 120:
+                return f"Buena pregunta. El meme dejó esa puerta abierta a propósito. 👀"
+            return "Buena pregunta; el universo todavía está tomando notas. 👀"
+
         if comment_type == "affection":
-            return "¡Gracias! Me alegra que te guste. 😊"
+            if any(word in comment_lower for word in ("amo", "te amo", "te quiero")):
+                return "El universo recibe ese cariño y lo guarda en favoritos. 🫶"
+            return "Gracias por pasar a dejar un poco de cariño por aquí. ✨"
+
         if comment_type == "opinion":
-            return f"Interesante punto de vista. Yo lo veo así: {meme_text if meme_text else 'lo mismo que siempre'}"
+            return "Esa lectura también cabe en el universo. 👀"
+
         if comment_type == "disagreement":
-            return "Entiendo tu perspectiva, aunque yo lo veo distinto. 😊"
-        # Fallback
-        return "Gracias por tu comentario. 🙂"
+            return "Puede ser; el universo admite más de una teoría. 😌"
+
+        # Only reached for a response-worthy contextual comment.
+        if meme_text or caption:
+            return "El universo dejó el remate abierto para que ustedes lo terminaran. 😏"
+        return "El universo tomó nota. 😏"
 
     def respond(
         self,
