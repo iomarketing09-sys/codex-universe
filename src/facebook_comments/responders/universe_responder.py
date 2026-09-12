@@ -326,7 +326,7 @@ def parse_publication_contexts_real(md_path: str) -> list[dict]:
         elif stripped.lower().startswith("caption:"):
             caption = stripped.split(":", 1)[1].strip()
             # Remove escape backslashes before #
-            caption = caption.replace("\#", "#")
+            caption = caption.replace("\\#", "#")
             current["caption"] = caption
         # character and visual_context are not directly in fixture; leave as None
     if current:
