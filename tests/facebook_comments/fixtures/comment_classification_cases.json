@@ -1,0 +1,61 @@
+{
+  "contract_version": "1.1",
+  "description": "Synthetic cases for complete-word meme relation matching and general reactions.",
+  "context": {
+    "publication_id": "122160625695072582",
+    "published_at": "5 de Septiembre 13:50",
+    "asset_ref": "Reuse 06 Junio - 260714",
+    "post_url": "https://www.facebook.com/photo/?fbid=122160625695072582",
+    "character": "Universe",
+    "visual_context": "Historieta de Universe en dos cuadros",
+    "meme_text": "No eres débil por caer con una persona tóxica; eres un humano",
+    "caption": ""
+  },
+  "cases": [
+    {
+      "comment": "¡Esto es genial! Me encanta el meme.",
+      "expected": {
+        "comment_type": "affection",
+        "relation_to_meme": "general_reaction",
+        "decision": "respond",
+        "response": "¡Gracias! Me alegra que te guste. 😊"
+      }
+    },
+    {
+      "comment": "Literalmente yo cuando necesito paz",
+      "expected": {
+        "comment_type": "identification",
+        "relation_to_meme": "personal_identification",
+        "decision": "respond",
+        "response": "Entonces ya somos dos. 😂"
+      }
+    },
+    {
+      "comment": "¿De qué trata este meme?",
+      "expected": {
+        "comment_type": "question",
+        "relation_to_meme": "question_about_content",
+        "decision": "respond",
+        "response": "Buena pregunta; el meme va justo de eso. 👀"
+      }
+    },
+    {
+      "comment": "jajaja, me pasó igual",
+      "expected": {
+        "comment_type": "identification",
+        "relation_to_meme": "personal_identification",
+        "decision": "respond",
+        "response": "Entonces ya somos dos. 😂"
+      }
+    },
+    {
+      "comment": "literalmente",
+      "expected": {
+        "comment_type": "other",
+        "relation_to_meme": "unrelated",
+        "decision": "no_response"
+      },
+      "note": "A reaction keyword must not match inside a longer word, and meme words must use complete-word matching."
+    }
+  ]
+}

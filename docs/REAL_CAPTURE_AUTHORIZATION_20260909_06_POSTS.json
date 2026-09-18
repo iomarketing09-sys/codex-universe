@@ -1,0 +1,39 @@
+{
+  "authorization_id": "USM-CAPTURE-20260909-06-POSTS",
+  "authorized": true,
+  "authorized_by": "Fernando",
+  "authorized_at_utc": "2026-09-09T00:00:00Z",
+  "purpose": "Capture currently available lifetime post metrics for the Wilfred experiment and three image controls",
+  "scope": {
+    "platform": "Facebook",
+    "account_id": "1036844829507460",
+    "window_type": "lifetime",
+    "max_external_reads": 6,
+    "read_only": true,
+    "graph_api_version": "v26.0",
+    "endpoint": "/{page-post-id}",
+    "fields": ["id", "from", "created_time", "is_published", "permalink_url", "shares", "comments.summary(true)", "reactions.summary(true)"],
+    "expected_from_page_id": "1036844829507460",
+    "identity_check": "Each returned from.id must equal expected_from_page_id before accepting metrics."
+  },
+  "posts": {
+    "wilfred": [
+      "1036844829507460_122160935757072582",
+      "1036844829507460_122161375299072582",
+      "1036844829507460_122161649019072582"
+    ],
+    "control": [
+      "1036844829507460_122160925809072582",
+      "1036844829507460_122161373049072582",
+      "1036844829507460_122161629063072582"
+    ]
+  },
+  "allowed_metrics": ["reactions", "comments", "shares", "created_time", "is_published"],
+  "missing_metric_policy": "Use null and quality_status=missing; never use zero unless Meta explicitly returns zero.",
+  "prohibited": ["publishing", "editing", "deleting", "scheduling", "comments", "direct_messages", "personal_data", "automatic_retries", "additional_posts", "additional_accounts", "additional_platforms", "insights_endpoint"],
+  "stop_on": ["account_mismatch", "post_id_mismatch", "unexpected_sensitive_fields", "authentication_failure", "schema_validation_failure", "more_than_six_external_reads"],
+  "execution_status": "authorized_not_executed",
+  "reason_for_scope": "Use the currently available post-object metrics only; do not request read_insights or infer unavailable values.",
+  "next_step_if_success": "Store six validated snapshots and compare Wilfred vs control descriptively.",
+  "next_step_if_error": "Stop and record the exact error; do not change token or retry automatically."
+}

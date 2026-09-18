@@ -117,3 +117,24 @@ outputs/*/secrets.json
 *secret*
 *credentials*
 *token*
+
+# Facebook Comment Response Pilot - Secrets and local artifacts
+.env
+.env.*
+tenants/*/.env
+*.token
+credentials/
+secrets/
+secret_*
+*_secret*
+# Local snapshot files that may contain personal data
+src/facebook_comments/snapshots/*.json
+# Evaluation outputs
+src/facebook_comments/*_evaluation.json
+src/facebook_comments/*_evaluation.txt
+src/facebook_comments/real_comments_evaluation*.json
+src/facebook_comments/real_comments_evaluation*.txt
+# Logs
+logs/
+*.log
+*.pyc
